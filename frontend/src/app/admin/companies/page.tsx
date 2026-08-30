@@ -180,7 +180,7 @@ export default function CompaniesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCompanies.map((company) => (
+                {filteredCompanies.map((company: any) => (
                   <tr key={company.id} className="border-b last:border-0 hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-900">
                       <div className="flex items-center gap-2">
