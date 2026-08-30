@@ -9,14 +9,31 @@ import { Search, Plus, Edit2, Trash2, Calendar, Building2, Users } from "lucide-
 export default function DrivesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-
-  // Mock data for placement drives
-  const drives = [
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // State data for placement drives
+  const [drives, setDrives] = useState([
     { id: 1, company_name: "Google", title: "Software Engineer Fall Hiring", drive_date: "2026-09-15T10:00:00Z", eligibility_criteria: "CGPA > 8.0, CSE/IT", status: "COLD" },
     { id: 2, company_name: "Microsoft", title: "SDE 1 Recruitment", drive_date: "2026-09-20T09:00:00Z", eligibility_criteria: "CGPA > 7.5, All Branches", status: "COLD" },
     { id: 3, company_name: "Amazon", title: "AWS Cloud Engineer Hiring", drive_date: "2026-08-25T11:00:00Z", eligibility_criteria: "CGPA > 7.0, CSE/IT", status: "HOT" },
     { id: 4, company_name: "Goldman Sachs", title: "Summer Analyst Program", drive_date: "2026-07-10T09:30:00Z", eligibility_criteria: "CGPA > 8.5", status: "WARM" },
-  ];
+  ]);
+
+  const [newDrive, setNewDrive] = useState({
+    company_name: "",
+    title: "",
+    drive_date: "",
+    eligibility_criteria: "",
+    status: "COLD"
+  });
+
+  const handleCreateDrive = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newId = drives.length > 0 ? Math.max(...drives.map(d => d.id)) + 1 : 1;
+    setDrives([{ id: newId, ...newDrive }, ...drives]);
+    setIsCreateModalOpen(false);
+    setNewDrive({ company_name: "", title: "", drive_date: "", eligibility_criteria: "", status: "COLD" });
+  };
 
   const filteredDrives = drives.filter(d => {
     const matchesSearch = d.title.toLowerCase().includes(search.toLowerCase()) || d.company_name.toLowerCase().includes(search.toLowerCase());
@@ -38,7 +55,10 @@ export default function DrivesPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight text-slate-900">Placement Drives</h2>
         <div className="flex space-x-2">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
             <Plus className="mr-2 h-4 w-4" /> Create Drive
           </Button>
         </div>
@@ -132,6 +152,89 @@ export default function DrivesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Drive Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Create New Placement Drive</h3>
+              <button 
+                onClick={() => setIsCreateModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                &times;
+              </button>
+            </div>
+            <form onSubmit={handleCreateDrive} className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Company Name</label>
+                <Input 
+                  required 
+                  value={newDrive.company_name} 
+                  onChange={e => setNewDrive({...newDrive, company_name: e.target.value})} 
+                  placeholder="e.g. Google" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Drive Title</label>
+                <Input 
+                  required 
+                  value={newDrive.title} 
+                  onChange={e => setNewDrive({...newDrive, title: e.target.value})} 
+                  placeholder="e.g. Software Engineer Fall Hiring" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Date & Time</label>
+                <Input 
+                  type="datetime-local" 
+                  required 
+                  value={newDrive.drive_date} 
+                  onChange={e => setNewDrive({...newDrive, drive_date: e.target.value})} 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Eligibility Criteria</label>
+                <Input 
+                  required 
+                  value={newDrive.eligibility_criteria} 
+                  onChange={e => setNewDrive({...newDrive, eligibility_criteria: e.target.value})} 
+                  placeholder="e.g. CGPA > 8.0, CSE/IT" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                <select 
+                  className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm"
+                  value={newDrive.status}
+                  onChange={e => setNewDrive({...newDrive, status: e.target.value})}
+                >
+                  <option value="COLD">COLD</option>
+                  <option value="HOT">HOT</option>
+                  <option value="WARM">WARM</option>
+                </select>
+              </div>
+              
+              <div className="pt-4 flex justify-end space-x-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsCreateModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Create
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

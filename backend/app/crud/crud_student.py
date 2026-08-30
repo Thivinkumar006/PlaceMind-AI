@@ -13,6 +13,9 @@ class CRUDStudent:
     def get_by_roll_number(self, db: Session, roll_number: str) -> Optional[Student]:
         return db.query(Student).filter(Student.roll_number == roll_number).first()
 
+    def get_by_email(self, db: Session, email: str) -> Optional[Student]:
+        return db.query(Student).filter(Student.email == email).first()
+
     def get_multi(
         self, 
         db: Session, 
@@ -24,7 +27,7 @@ class CRUDStudent:
         batch_year: Optional[int] = None,
         placement_status: Optional[str] = None,
         show_deleted: bool = False
-    ) -> Tuple[List[Student], int]:
+    ) -> Tuple[List[Student], int, dict]:
         
         query = db.query(Student)
         
@@ -55,12 +58,20 @@ class CRUDStudent:
         # Total count before pagination
         total = query.count()
         
+        # Calculate stats based on the same query
+        stats = {
+            "placed": query.filter(Student.placement_status == "Placed").count(),
+            "unplaced": query.filter(Student.placement_status == "Unplaced").count(),
+            "shortlisted": query.filter(Student.placement_status == "Shortlisted").count(),
+            "yet_to_be_placed": query.filter(Student.placement_status == "YET_TO_BE_PLACED").count()
+        }
+        
         # Order by deleted (active first) then by name
         query = query.order_by(Student.is_deleted.asc(), Student.name.asc())
         
         # Pagination
         students = query.offset(skip).limit(limit).all()
-        return students, total
+        return students, total, stats
 
     def create(self, db: Session, *, obj_in: StudentCreate) -> Student:
         db_obj = Student(**obj_in.model_dump())
@@ -68,6 +79,14 @@ class CRUDStudent:
         db.commit()
         db.refresh(db_obj)
         return db_obj
+
+    def bulk_create(self, db: Session, *, objs_in: List[StudentCreate]) -> List[Student]:
+        db_objs = [Student(**obj_in.model_dump()) for obj_in in objs_in]
+        db.add_all(db_objs)
+        db.commit()
+        for db_obj in db_objs:
+            db.refresh(db_obj)
+        return db_objs
 
     def update(self, db: Session, *, db_obj: Student, obj_in: StudentUpdate) -> Student:
         update_data = obj_in.model_dump(exclude_unset=True)

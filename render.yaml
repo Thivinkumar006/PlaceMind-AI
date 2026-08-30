@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: placement-backend
+    env: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: "./build.sh"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port 10000"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SQLALCHEMY_DATABASE_URI
+        fromDatabase:
+          name: placement-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: BACKEND_CORS_ORIGINS
+        value: '["https://placement-frontend.onrender.com"]'
+
+  - type: web
+    name: placement-frontend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: placement-backend
+          property: host
+          format: https://{host}/api/v1
+
+databases:
+  - name: placement-db
+    region: oregon
+    plan: free
+    databaseName: placement
+    user: placement_user

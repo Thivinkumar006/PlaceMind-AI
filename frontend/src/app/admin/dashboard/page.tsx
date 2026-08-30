@@ -11,26 +11,35 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  Legend
 } from 'recharts';
+import useSWR from "swr";
+import { Loader2 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api";
 
-const placementData = [
-  { name: 'CSE', placed: 85, total: 100 },
-  { name: 'IT', placed: 72, total: 90 },
-  { name: 'ECE', placed: 64, total: 80 },
-  { name: 'EEE', placed: 58, total: 85 },
-];
-
-const ctcData = [
-  { name: '2-4 LPA', value: 120 },
-  { name: '4-6 LPA', value: 85 },
-  { name: '6-8 LPA', value: 50 },
-  { name: '8-10 LPA', value: 20 },
-  { name: '10+ LPA', value: 10 },
-];
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export default function AdminDashboard() {
+  const { data, error, isLoading } = useSWR(`${API_BASE_URL}/dashboard/stats`, fetcher);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
+        Failed to load dashboard data. Please make sure the backend is running.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -44,8 +53,8 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-slate-500">Total Students</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-900">520</div>
-            <p className="text-xs text-emerald-600 font-medium mt-1">+20 from last year</p>
+            <div className="text-3xl font-bold text-slate-900">{data?.kpi_stats?.total_students || 0}</div>
+            <p className="text-xs text-slate-500 font-medium mt-1">Real-time data</p>
           </CardContent>
         </Card>
         <Card className="bg-white">
@@ -53,8 +62,8 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-slate-500">Placed Students</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-900">285</div>
-            <p className="text-xs text-emerald-600 font-medium mt-1">54.8% Placement Rate</p>
+            <div className="text-3xl font-bold text-slate-900">{data?.kpi_stats?.placed_students || 0}</div>
+            <p className="text-xs text-slate-500 font-medium mt-1">{data?.kpi_stats?.placement_rate || 0}% Placement Rate</p>
           </CardContent>
         </Card>
         <Card className="bg-white">
@@ -62,8 +71,8 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-slate-500">Total Companies</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-900">42</div>
-            <p className="text-xs text-emerald-600 font-medium mt-1">+5 new this week</p>
+            <div className="text-3xl font-bold text-slate-900">{data?.kpi_stats?.total_companies || 0}</div>
+            <p className="text-xs text-slate-500 font-medium mt-1">Real-time data</p>
           </CardContent>
         </Card>
         <Card className="bg-white">
@@ -71,8 +80,8 @@ export default function AdminDashboard() {
             <CardTitle className="text-sm font-medium text-slate-500">Active Drives</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-900">7</div>
-            <p className="text-xs text-slate-500 font-medium mt-1">3 ending soon</p>
+            <div className="text-3xl font-bold text-slate-900">{data?.kpi_stats?.active_drives || 0}</div>
+            <p className="text-xs text-slate-500 font-medium mt-1">Real-time data</p>
           </CardContent>
         </Card>
       </div>
@@ -86,7 +95,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={placementData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <BarChart data={data?.placement_data || []} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
@@ -94,6 +103,7 @@ export default function AdminDashboard() {
                     cursor={{fill: '#f1f5f9'}}
                     contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
                   />
+                  <Legend wrapperStyle={{paddingTop: '20px'}} />
                   <Bar dataKey="placed" name="Placed" fill="#2563eb" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="total" name="Total Students" fill="#94a3b8" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -111,7 +121,7 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={ctcData}
+                    data={data?.ctc_data || []}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -119,13 +129,14 @@ export default function AdminDashboard() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {ctcData.map((entry, index) => (
+                    {(data?.ctc_data || []).map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip 
                     contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
                   />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -133,7 +144,7 @@ export default function AdminDashboard() {
         </Card>
       </div>
       
-      {/* Recent Activity Table (Mock) */}
+      {/* Recent Activity Table */}
       <Card className="bg-white">
         <CardHeader>
           <CardTitle className="text-slate-900">Recent Drives Activity</CardTitle>
@@ -151,27 +162,31 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-slate-900">TCS</td>
-                  <td className="px-4 py-3 text-slate-600">Software Engineer</td>
-                  <td className="px-4 py-3 text-slate-600">15 Sep 2026</td>
-                  <td className="px-4 py-3"><span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">WARM</span></td>
-                  <td className="px-4 py-3 font-medium text-slate-900">35</td>
-                </tr>
-                <tr className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-slate-900">Infosys</td>
-                  <td className="px-4 py-3 text-slate-600">Systems Engineer</td>
-                  <td className="px-4 py-3 text-slate-600">20 Sep 2026</td>
-                  <td className="px-4 py-3"><span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-medium">HOT</span></td>
-                  <td className="px-4 py-3 font-medium text-slate-900">-</td>
-                </tr>
-                <tr className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-slate-900">Wipro</td>
-                  <td className="px-4 py-3 text-slate-600">Project Engineer</td>
-                  <td className="px-4 py-3 text-slate-600">25 Sep 2026</td>
-                  <td className="px-4 py-3"><span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">COLD</span></td>
-                  <td className="px-4 py-3 font-medium text-slate-900">-</td>
-                </tr>
+                {data?.recent_drives?.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                      No recent activity
+                    </td>
+                  </tr>
+                ) : (
+                  (data?.recent_drives || []).map((drive: any, i: number) => (
+                    <tr key={i} className="border-b last:border-0 hover:bg-slate-50">
+                      <td className="px-4 py-3 font-medium text-slate-900">{drive.company}</td>
+                      <td className="px-4 py-3 text-slate-500">{drive.role}</td>
+                      <td className="px-4 py-3 text-slate-500">{drive.date}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          drive.status === 'HOT' ? 'bg-red-100 text-red-700' :
+                          drive.status === 'WARM' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {drive.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-900">{drive.selected}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

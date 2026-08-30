@@ -16,5 +16,4 @@ class PlacementDrive(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Assuming we will want to access the company from a drive
-    # company = relationship("Company", back_populates="drives")
+    company = relationship("Company", back_populates="drives")

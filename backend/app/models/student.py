@@ -38,3 +38,4 @@ class Student(Base):
     
     is_deleted = Column(Boolean, default=False)
     deleted_at = Column(DateTime, nullable=True)
+    upload_batch_id = Column(String, index=True, nullable=True)

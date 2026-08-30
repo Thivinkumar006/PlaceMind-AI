@@ -3,6 +3,7 @@ import { X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function StudentForm({ student, onClose }: { student?: any, onClose: () => void }) {
   const isEditing = !!student;
@@ -75,8 +76,8 @@ export default function StudentForm({ student, onClose }: { student?: any, onClo
 
     try {
       const url = isEditing 
-        ? `http://localhost:8000/api/v1/students/${student.id}` 
-        : `http://localhost:8000/api/v1/students/`;
+        ? `${API_BASE_URL}/students/${student.id}` 
+        : `${API_BASE_URL}/students/`;
         
       const res = await fetch(url, {
         method: isEditing ? "PUT" : "POST",

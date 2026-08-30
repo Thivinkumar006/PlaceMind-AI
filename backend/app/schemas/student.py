@@ -33,6 +33,8 @@ class StudentBase(BaseModel):
     placement_status: Optional[str] = "Unplaced"
     company_name: Optional[str] = None
     ctc_lpa: Optional[float] = None
+    is_deleted: bool = False
+    upload_batch_id: Optional[str] = None
 
 class StudentCreate(StudentBase):
     pass
@@ -84,3 +86,18 @@ class Student(StudentInDBBase):
 class StudentList(BaseModel):
     items: list[Student]
     total: int
+    stats: Optional[dict] = None
+
+class StudentImportRow(BaseModel):
+    data: dict
+    status: str  # "Valid", "Error", "Duplicate"
+    errors: list[str]
+
+class StudentImportPreview(BaseModel):
+    file_name: str
+    summary: dict
+    column_mapping: dict
+    preview_data: list[StudentImportRow]
+
+class StudentImportConfirm(BaseModel):
+    records: list[dict]

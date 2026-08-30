@@ -9,6 +9,8 @@ class CompanyBase(BaseModel):
     contact_person: Optional[str] = None
     contact_email: Optional[EmailStr] = None
     contact_phone: Optional[str] = None
+    location: Optional[str] = None
+    jd_link: Optional[str] = None
     is_active: bool = True
     status: str = "COLD"
 
@@ -22,6 +24,8 @@ class CompanyUpdate(BaseModel):
     contact_person: Optional[str] = None
     contact_email: Optional[EmailStr] = None
     contact_phone: Optional[str] = None
+    location: Optional[str] = None
+    jd_link: Optional[str] = None
     is_active: Optional[bool] = None
     status: Optional[str] = None
 

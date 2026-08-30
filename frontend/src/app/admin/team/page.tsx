@@ -13,6 +13,8 @@ const MOCK_TEAM = [
   { id: 3, name: "Michael Chang", role: "Industry Liaison", email: "m.chang@university.edu", phone: "+1 (555) 345-6789", department: "Engineering", status: "Active" },
   { id: 4, name: "Dr. Emily Rodriguez", role: "Placement Coordinator", email: "e.rodriguez@university.edu", phone: "+1 (555) 456-7890", department: "Business School", status: "On Leave" },
   { id: 5, name: "David Kim", role: "Student Advisor", email: "d.kim@university.edu", phone: "+1 (555) 567-8901", department: "Information Technology", status: "Active" },
+  { id: 6, name: "Alex Thompson", role: "Manager", email: "a.thompson@university.edu", phone: "+1 (555) 678-9012", department: "Career Services", status: "Active" },
+  { id: 7, name: "Lisa Patel", role: "Placement Lead", email: "l.patel@university.edu", phone: "+1 (555) 789-0123", department: "Engineering", status: "Active" },
 ];
 
 export default function PlacementTeamPage() {

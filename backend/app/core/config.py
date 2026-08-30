@@ -22,6 +22,12 @@ class Settings(BaseSettings):
 
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///./placement_portal.db"
 
+    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
+    def assemble_db_connection(cls, v: str) -> str:
+        if v and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
+
     class Config:
         case_sensitive = True
 
