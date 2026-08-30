@@ -11,9 +11,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: SQLALCHEMY_DATABASE_URI
-        fromDatabase:
-          name: placement-db
-          property: connectionString
+        value: postgresql://neondb_owner:npg_CQJXKDHbB32S@ep-spring-recipe-az3cg4nj-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       - key: SECRET_KEY
         generateValue: true
       - key: BACKEND_CORS_ORIGINS
@@ -35,9 +33,4 @@ services:
           property: host
           format: https://{host}/api/v1
 
-databases:
-  - name: placement-db
-    region: oregon
-    plan: free
-    databaseName: placement
-    user: placement_user
+
