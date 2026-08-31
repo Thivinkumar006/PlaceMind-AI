@@ -8,6 +8,7 @@ from app.schemas import company as schemas
 
 router = APIRouter()
 
+@router.get("", response_model=schemas.CompanyList, include_in_schema=False)
 @router.get("/", response_model=schemas.CompanyList)
 def read_companies(
     db: Session = Depends(get_db),
@@ -32,8 +33,10 @@ def read_companies(
     )
     return {"items": companies, "total": total}
 
+@router.post("", response_model=schemas.Company, include_in_schema=False)
 @router.post("/", response_model=schemas.Company)
 def create_company(
+
     *,
     db: Session = Depends(get_db),
     company_in: schemas.CompanyCreate,

@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.api.v1.api import api_router
 from app.core.config import settings
 
-# Basic logging setup — logs endpoint, method, and errors but never secrets
+# Basic logging setup
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
@@ -21,8 +21,7 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS — only needed for local development (localhost:3000 hitting localhost:8000)
-# In production, frontend and backend are on the same origin, so CORS is a no-op.
+# CORS — for local dev (localhost:3000 → localhost:8000). Same-origin in prod.
 # ---------------------------------------------------------------------------
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
@@ -45,7 +44,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 # ---------------------------------------------------------------------------
-# Health check — always available, used by Render and for manual testing
+# Health check
 # ---------------------------------------------------------------------------
 @app.get("/api/health", tags=["health"])
 def health_check():
@@ -55,20 +54,13 @@ def health_check():
     })
 
 # ---------------------------------------------------------------------------
-# API routes  (/api/v1/*)
-# Registered BEFORE static files so API routes always take priority.
+# All backend API routes  (/api/v1/*)
 # ---------------------------------------------------------------------------
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # ---------------------------------------------------------------------------
-# Serve Next.js static export
-# Built into frontend/out/ by `next build` with output:'export' in next.config.ts
-# Path computed relative to this file so it works regardless of CWD.
-#
-# Layout on Render (after build.sh runs):
-#   /opt/render/project/src/
-#     backend/app/main.py   ← __file__
-#     frontend/out/         ← static build
+# Serve Next.js static frontend
+# Built into frontend/out/ by `next build` with output:'export'
 # ---------------------------------------------------------------------------
 _HERE = Path(__file__).resolve().parent            # .../backend/app/
 _FRONTEND_OUT = (_HERE / ".." / ".." / "frontend" / "out").resolve()
@@ -76,38 +68,40 @@ _FRONTEND_OUT = (_HERE / ".." / ".." / "frontend" / "out").resolve()
 logger.info(f"[STARTUP] Frontend build path: {_FRONTEND_OUT}")
 
 if _FRONTEND_OUT.exists():
-    logger.info(f"[STARTUP] Frontend build FOUND - serving static files")
+    logger.info(f"[STARTUP] Frontend build FOUND")
     _INDEX_HTML = _FRONTEND_OUT / "index.html"
 
-    # Mount Next.js static assets (_next/static/...) first
-    # These are exact-prefix matches so they take priority over the catch-all below
+    # Mount Next.js _next/ static assets (JS bundles, CSS, fonts)
     _next_dir = _FRONTEND_OUT / "_next"
     if _next_dir.exists():
         app.mount("/_next", StaticFiles(directory=str(_next_dir)), name="nextjs_assets")
 
-    # Mount public/ assets (favicon, images, etc.)
-    # Serve them from root so /favicon.ico etc. work
-    app.mount("/public", StaticFiles(directory=str(_FRONTEND_OUT)), name="public_assets")
-
-    # SPA catch-all: any path not matched by API routes or asset mounts above
-    # serves the appropriate Next.js page's index.html.
-    # With trailingSlash:true in next.config.ts each route has its own index.html:
-    #   /admin/dashboard/ -> frontend/out/admin/dashboard/index.html
-    #   /login/           -> frontend/out/login/index.html
-    #   /                 -> frontend/out/index.html
+    # SPA catch-all: serves the correct Next.js page HTML for every frontend route.
+    # CRITICAL: Must return 404 for /api/* so API routes are not swallowed.
+    # FastAPI routes registered above (/api/v1/*, /api/health) take priority in
+    # route matching since they were registered first, but the path converter
+    # /{full_path:path} can still intercept them in edge cases — so we guard explicitly.
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
-        # Try the exact page directory first (e.g., admin/dashboard/index.html)
+        # Never intercept API requests — return 404 so the error is clear
+        if full_path.startswith("api/") or full_path == "api":
+            return JSONResponse(
+                {"detail": f"API route /{full_path} not found"},
+                status_code=404
+            )
+
+        # Try the exact page directory (trailingSlash:true creates page/index.html)
+        # e.g. "admin/dashboard" -> frontend/out/admin/dashboard/index.html
         page_index = _FRONTEND_OUT / full_path / "index.html"
         if page_index.exists():
             return FileResponse(str(page_index))
 
-        # Try exact file (e.g., favicon.ico)
+        # Try exact file (favicon.ico, robots.txt, etc.)
         exact_file = _FRONTEND_OUT / full_path
         if exact_file.exists() and exact_file.is_file():
             return FileResponse(str(exact_file))
 
-        # Fallback to root index.html (Next.js handles the route client-side)
+        # Fallback: root index.html — Next.js handles routing client-side
         if _INDEX_HTML.exists():
             return FileResponse(str(_INDEX_HTML))
 
@@ -116,6 +110,6 @@ if _FRONTEND_OUT.exists():
 else:
     logger.warning(
         f"[STARTUP] Frontend build NOT FOUND at {_FRONTEND_OUT}. "
-        "The build.sh script should have run `npm run build` in the frontend directory. "
-        "Check Render build logs. Only API routes will be served."
+        "Check that build.sh ran `npm run build` in the frontend directory. "
+        "Only API routes will be served."
     )

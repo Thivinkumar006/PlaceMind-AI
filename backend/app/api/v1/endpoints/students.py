@@ -12,6 +12,7 @@ import math
 
 router = APIRouter()
 
+@router.get("", response_model=schemas.StudentList, include_in_schema=False)
 @router.get("/", response_model=schemas.StudentList)
 def read_students(
     db: Session = Depends(get_db),
@@ -35,8 +36,10 @@ def read_students(
     )
     return {"items": students, "total": total, "stats": stats}
 
+@router.post("", response_model=schemas.Student, include_in_schema=False)
 @router.post("/", response_model=schemas.Student)
 def create_student(
+
     *,
     db: Session = Depends(get_db),
     student_in: schemas.StudentCreate,
