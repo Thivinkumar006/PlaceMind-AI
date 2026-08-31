@@ -5,7 +5,8 @@ services:
     region: oregon
     plan: free
     # rootDir is NOT set — the build script runs from the repo root
-    buildCommand: "./build.sh"
+    buildCommand: "bash build.sh"
+
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
