@@ -6,7 +6,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: "./build.sh"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port 10000"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -26,11 +26,11 @@ services:
     buildCommand: "npm install && npm run build"
     startCommand: "npm start"
     envVars:
+      - key: NODE_VERSION
+        value: 20.14.0
       - key: NEXT_PUBLIC_API_URL
         fromService:
           type: web
           name: placement-backend
           property: host
           format: https://{host}/api/v1
-
-
