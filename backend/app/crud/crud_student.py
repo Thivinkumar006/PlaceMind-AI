@@ -58,12 +58,18 @@ class CRUDStudent:
         # Total count before pagination
         total = query.count()
         
-        # Calculate stats based on the same query
+        # Calculate stats based on base un-deleted students
+        base_query = db.query(Student).filter(Student.is_deleted == False)
+        if department:
+            base_query = base_query.filter(Student.department == department)
+        if batch_year:
+            base_query = base_query.filter(Student.batch_year == batch_year)
+
         stats = {
-            "placed": query.filter(Student.placement_status == "Placed").count(),
-            "unplaced": query.filter(Student.placement_status == "Unplaced").count(),
-            "shortlisted": query.filter(Student.placement_status == "Shortlisted").count(),
-            "yet_to_be_placed": query.filter(Student.placement_status == "YET_TO_BE_PLACED").count()
+            "placed": base_query.filter(Student.placement_status == "Placed").count(),
+            "unplaced": base_query.filter(or_(Student.placement_status == "Unplaced", Student.placement_status == "YET_TO_BE_PLACED", Student.placement_status == None)).count(),
+            "shortlisted": base_query.filter(Student.placement_status == "Shortlisted").count(),
+            "yet_to_be_placed": base_query.filter(or_(Student.placement_status == "Unplaced", Student.placement_status == "YET_TO_BE_PLACED", Student.placement_status == None)).count()
         }
         
         # Order by deleted (active first) then by name

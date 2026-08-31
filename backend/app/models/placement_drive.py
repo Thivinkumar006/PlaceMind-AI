@@ -12,7 +12,7 @@ class PlacementDrive(Base):
     description = Column(Text)
     drive_date = Column(DateTime(timezone=True))
     eligibility_criteria = Column(Text)
-    status = Column(String, default="COLD") # COLD, HOT, WARM
+    status = Column(String, default="WARM") # COLD (Lead), WARM (Scheduled), HOT (Ongoing), COMPLETED
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

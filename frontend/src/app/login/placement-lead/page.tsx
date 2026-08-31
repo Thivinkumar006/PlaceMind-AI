@@ -53,12 +53,19 @@ export default function PlacementLeadLoginPage() {
       {/* Left Side Branding */}
       <div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-slate-900 text-white p-12">
         <div className="max-w-md space-y-6 text-center">
-          <div className="bg-blue-600 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center shadow-lg">
-            <Briefcase className="w-10 h-10 text-white" />
+          <div className="bg-white p-3 rounded-2xl mx-auto flex items-center justify-center shadow-xl max-w-[280px]">
+            <img 
+              src="/rathinam-logo.png" 
+              alt="Rathinam Technical Campus" 
+              className="h-12 w-auto object-contain"
+            />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">Placement Lead Portal</h1>
-          <p className="text-slate-300 text-lg">
-            Manage recruiters, placement drives, and track outcomes.
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Placement Lead Portal</h1>
+            <p className="text-blue-400 font-semibold text-xs mt-1">Rathinam Technical Campus (Autonomous)</p>
+          </div>
+          <p className="text-slate-300 text-sm">
+            Coordinate recruiters, manage drive schedules, and track student placement outcomes.
           </p>
         </div>
       </div>

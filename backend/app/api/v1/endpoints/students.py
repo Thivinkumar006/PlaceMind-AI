@@ -150,10 +150,6 @@ async def import_preview(
     
     try:
         contents = await file.read()
-        
-        # DEBUG: Save file to inspect it
-        with open("scratch/uploaded.xlsx", "wb") as f:
-            f.write(contents)
             
         # Scan first 20 rows to find the actual header row
         df_test = pd.read_excel(io.BytesIO(contents), header=None)
@@ -365,6 +361,7 @@ async def import_confirm(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to import records: {str(e)}")
 
+@router.get("/template")
 @router.get("/import/template")
 async def download_template():
     # Create a template Excel file
@@ -392,22 +389,23 @@ async def download_template():
          None, None]
     ]
     
+    from openpyxl.utils import get_column_letter
     df = pd.DataFrame(sample_data, columns=template_columns)
     
     # Save to a bytes buffer
     output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, sheet_name='Template', index=False)
         
         # Auto-adjust columns width
         worksheet = writer.sheets['Template']
-        for idx, col in enumerate(df):
+        for idx, col in enumerate(df.columns, 1):
             series = df[col]
             max_len = max((
                 series.astype(str).map(len).max(),
                 len(str(series.name))
-            )) + 2
-            worksheet.set_column(idx, idx, max_len)
+            )) + 3
+            worksheet.column_dimensions[get_column_letter(idx)].width = max(max_len, 12)
             
     output.seek(0)
     

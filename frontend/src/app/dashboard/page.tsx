@@ -152,8 +152,18 @@ export default function DashboardPage() {
                             <p className="text-sm text-slate-500">{drive.role}</p>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium text-slate-900">{drive.status}</div>
-                            <div className="text-xs text-slate-500">{drive.date}</div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              drive.status === 'WARM' || drive.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-800' :
+                              drive.status === 'HOT' || drive.status === 'ONGOING' ? 'bg-amber-100 text-amber-800' :
+                              drive.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {drive.status === 'WARM' || drive.status === 'SCHEDULED' ? 'Scheduled' :
+                               drive.status === 'HOT' || drive.status === 'ONGOING' ? 'Ongoing' :
+                               drive.status === 'COMPLETED' ? 'Completed' :
+                               drive.status === 'COLD' ? 'Cold' : drive.status}
+                            </span>
+                            <div className="text-xs text-slate-500 mt-0.5">{drive.date}</div>
                           </div>
                         </div>
                       ))

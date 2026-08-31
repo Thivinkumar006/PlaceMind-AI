@@ -42,8 +42,41 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Institutional Branding Hero Banner */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-xs flex-shrink-0">
+            <img 
+              src="/rathinam-logo.png" 
+              alt="Rathinam Technical Campus" 
+              className="h-12 md:h-14 w-auto object-contain"
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                Autonomous Institution
+              </span>
+              <span className="text-xs font-semibold text-slate-500">
+                Coimbatore, Tamil Nadu
+              </span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 mt-1">
+              Placement & Career Guidance Dashboard
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 self-end md:self-center">
+          <div className="text-right hidden sm:block">
+            <p className="text-xs font-bold text-slate-500 uppercase">Accreditation</p>
+            <p className="text-xs font-black text-slate-800">NAAC A+ (3.45) • NBA</p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard Overview</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard Overview</h2>
       </div>
       
       {/* KPI Cards */}
@@ -175,12 +208,16 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3 text-slate-500">{drive.role}</td>
                       <td className="px-4 py-3 text-slate-500">{drive.date}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          drive.status === 'HOT' ? 'bg-red-100 text-red-700' :
-                          drive.status === 'WARM' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                          drive.status === 'WARM' || drive.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-800' :
+                          drive.status === 'HOT' || drive.status === 'ONGOING' ? 'bg-amber-100 text-amber-800' :
+                          drive.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
+                          'bg-slate-100 text-slate-700'
                         }`}>
-                          {drive.status}
+                          {drive.status === 'WARM' || drive.status === 'SCHEDULED' ? 'Scheduled' :
+                           drive.status === 'HOT' || drive.status === 'ONGOING' ? 'Ongoing' :
+                           drive.status === 'COMPLETED' ? 'Completed' :
+                           drive.status === 'COLD' ? 'Cold' : drive.status}
                         </span>
                       </td>
                       <td className="px-4 py-3 font-medium text-slate-900">{drive.selected}</td>

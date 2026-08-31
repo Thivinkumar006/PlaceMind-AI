@@ -18,7 +18,7 @@ COMPANIES = [
         "contact_email": "contact@google.com",
         "contact_phone": "+1 234 567 8900",
         "is_active": True,
-        "status": "COLD",
+        "status": "WARM", # Contacted / Scheduled
     },
     {
         "name": "Microsoft",
@@ -30,7 +30,7 @@ COMPANIES = [
         "contact_email": "contact@microsoft.com",
         "contact_phone": "+1 987 654 3210",
         "is_active": True,
-        "status": "HOT",
+        "status": "WARM", # Contacted / Scheduled
     },
     {
         "name": "Amazon",
@@ -42,19 +42,31 @@ COMPANIES = [
         "contact_email": "contact@amazon.com",
         "contact_phone": "+1 555 123 4567",
         "is_active": True,
-        "status": "WARM",
+        "status": "HOT", # JD Uploaded / Ongoing Drive
     },
     {
         "name": "Goldman Sachs",
         "industry": "Finance",
         "location": "New York, NY",
-        "jd_link": "",
+        "jd_link": "https://goldmansachs.com/careers",
         "website": "https://goldmansachs.com",
         "contact_person": "David Solomon",
         "contact_email": "contact@gs.com",
         "contact_phone": "+1 111 222 3333",
-        "is_active": False,
-        "status": "COLD",
+        "is_active": True,
+        "status": "COMPLETED", # Completed Drive
+    },
+    {
+        "name": "Netflix",
+        "industry": "Entertainment / Streaming",
+        "location": "Los Gatos, CA",
+        "jd_link": "",
+        "website": "https://jobs.netflix.com",
+        "contact_person": "Ted Sarandos",
+        "contact_email": "contact@netflix.com",
+        "contact_phone": "+1 408 540 3700",
+        "is_active": True,
+        "status": "COLD", # Created / Initial Outreach (COLD)
     },
 ]
 
@@ -64,9 +76,13 @@ def seed_companies(db: Session) -> None:
         if not existing_company:
             company = Company(**company_data)
             db.add(company)
+        else:
+            for k, v in company_data.items():
+                setattr(existing_company, k, v)
+            db.add(existing_company)
     
     db.commit()
-    print(f"Seeded {len(COMPANIES)} companies.")
+    print(f"Seeded & updated {len(COMPANIES)} companies.")
 
 if __name__ == "__main__":
     print("Seeding companies...")

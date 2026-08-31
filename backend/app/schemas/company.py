@@ -44,3 +44,17 @@ class Company(CompanyInDBBase):
 class CompanyList(BaseModel):
     items: list[Company]
     total: int
+
+class CompanyImportRow(BaseModel):
+    data: dict
+    status: str  # "Valid", "Update", "Error"
+    errors: list[str] = []
+
+class CompanyImportPreview(BaseModel):
+    file_name: str
+    summary: dict  # {"total": int, "valid": int, "error": int, "update": int}
+    column_mapping: dict
+    preview_data: list[CompanyImportRow]
+
+class CompanyImportConfirm(BaseModel):
+    records: list[dict]

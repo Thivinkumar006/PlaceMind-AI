@@ -20,7 +20,7 @@ class StudentBase(BaseModel):
     pg_year: Optional[int] = None
     cgpa: float
     
-    email: EmailStr
+    email: str
     mobile_number: str
     
     github_link: Optional[str] = None
@@ -57,7 +57,7 @@ class StudentUpdate(BaseModel):
     pg_year: Optional[int] = None
     cgpa: Optional[float] = None
     
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     mobile_number: Optional[str] = None
     
     github_link: Optional[str] = None
@@ -74,10 +74,9 @@ class StudentUpdate(BaseModel):
 class StudentInDBBase(StudentBase):
     id: int
     is_deleted: bool
-    deleted_at: Optional[datetime]
+    deleted_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
 class Student(StudentInDBBase):
