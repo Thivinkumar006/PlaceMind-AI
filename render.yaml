@@ -1,36 +1,24 @@
 services:
   - type: web
-    name: placement-backend
+    name: placement-portal
     env: python
     region: oregon
     plan: free
-    rootDir: backend
+    # rootDir is NOT set — the build script runs from the repo root
     buildCommand: "./build.sh"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: NODE_VERSION
+        value: 20.14.0
       - key: SQLALCHEMY_DATABASE_URI
         value: postgresql://neondb_owner:npg_CQJXKDHbB32S@ep-spring-recipe-az3cg4nj-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       - key: SECRET_KEY
         generateValue: true
+      # NOTE: NEXT_PUBLIC_API_URL is intentionally NOT set here.
+      # The frontend fallback '/api/v1' is used in production (same-origin, no localhost).
+      # For CORS — in production frontend + backend are same origin, no CORS needed.
+      # In dev, set BACKEND_CORS_ORIGINS to include http://localhost:3000
       - key: BACKEND_CORS_ORIGINS
-        value: '["https://placement-frontend.onrender.com"]'
-
-  - type: web
-    name: placement-frontend
-    env: node
-    region: oregon
-    plan: free
-    rootDir: frontend
-    buildCommand: "npm install && npm run build"
-    startCommand: "npm start"
-    envVars:
-      - key: NODE_VERSION
-        value: 20.14.0
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: placement-backend
-          property: host
-          format: https://{host}/api/v1
+        value: '["http://localhost:3000", "http://127.0.0.1:3000"]'
