@@ -24,7 +24,13 @@ class Settings(BaseSettings):
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: str) -> str:
-        if v and v.startswith("postgres://"):
+        if not v:
+            return "sqlite:///./placement_portal.db"
+        
+        # Strip accidental quotes that might have been pasted in the dashboard
+        v = v.strip('"').strip("'")
+        
+        if v.startswith("postgres://"):
             return v.replace("postgres://", "postgresql://", 1)
         return v
 
